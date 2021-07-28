@@ -52,6 +52,9 @@ var (
 	maxLen = kingpin.Flag(
 		"max-len",
 		"Target maximum line length").Short('m').Default("100").Int()
+	ignoreSignatures = kingpin.Flag(
+		"ignore-signatures",
+		"Do not shorten function signatures").Default("false").Bool()
 	profile = kingpin.Flag(
 		"profile",
 		"Path to profile output").Default("").String()
@@ -123,6 +126,7 @@ func run() error {
 		DotFile:          *dotFile,
 		BaseFormatterCmd: *baseFormatterCmd,
 		ChainSplitDots:   *chainSplitDots,
+		IgnoreSignatures: *ignoreSignatures,
 	}
 	shortener := NewShortener(config)
 

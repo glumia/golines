@@ -34,14 +34,15 @@ const maxRounds = 20
 
 // ShortenerConfig stores the configuration options exposed by a Shortener instance.
 type ShortenerConfig struct {
-	MaxLen          int    // Max target width for each line
-	TabLen          int    // Width of a tab character
-	KeepAnnotations bool   // Whether to keep annotations in final result (for debugging only)
-	ShortenComments bool   // Whether to shorten comments
-	ReformatTags    bool   // Whether to reformat struct tags in addition to shortening long lines
-	IgnoreGenerated bool   // Whether to ignore generated files
-	DotFile         string // Path to write dot-formatted output to (for debugging only)
-	ChainSplitDots  bool   // Whether to split chain methods by putting dots at ends of lines
+	MaxLen           int    // Max target width for each line
+	TabLen           int    // Width of a tab character
+	KeepAnnotations  bool   // Whether to keep annotations in final result (for debugging only)
+	ShortenComments  bool   // Whether to shorten comments
+	ReformatTags     bool   // Whether to reformat struct tags in addition to shortening long lines
+	IgnoreGenerated  bool   // Whether to ignore generated files
+	DotFile          string // Path to write dot-formatted output to (for debugging only)
+	ChainSplitDots   bool   // Whether to split chain methods by putting dots at ends of lines
+	IgnoreSignatures bool   // Whether to ignore function signatures on shortening
 
 	// Formatter that will be run before and after main shortening process. If empty,
 	// defaults to goimports (if found), otherwise gofmt.
@@ -390,7 +391,7 @@ func (s *Shortener) formatDecl(decl dst.Decl) {
 	switch d := decl.(type) {
 	case *dst.FuncDecl:
 		if HasAnnotationRecursive(decl) {
-			if d.Type != nil && d.Type.Params != nil {
+			if d.Type != nil && d.Type.Params != nil && !s.config.IgnoreSignatures {
 				s.formatFieldList(d.Type.Params)
 			}
 		}
@@ -551,7 +552,7 @@ func (s *Shortener) formatExpr(expr dst.Expr, force bool, isChain bool) {
 	case *dst.FuncLit:
 		s.formatStmt(e.Body)
 	case *dst.FuncType:
-		if shouldShorten {
+		if shouldShorten && !s.config.IgnoreSignatures {
 			s.formatFieldList(e.Params)
 		}
 	case *dst.InterfaceType:
